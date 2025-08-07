@@ -2,7 +2,7 @@
 
 ⚠️ WORK IN PROGRESS ⚠️
 
-Intro about DLLs:
+## Intro about DLLs:
 
 DLL injection is a technique used to run code within the address space of another process by forcing it to load a dynamic-link library (DLL) - a shared module used natively in Windows systems to control essential resources and functionalities. (https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-libraries).
 This method allows the injected code to manipulate the target process's behavior, which can be used for both legitimate and malicious purposes.
@@ -10,12 +10,12 @@ This method allows the injected code to manipulate the target process's behavior
 The injected DLL can perform various actions, from altering the process's behavior to stealing sensitive information. It's a technique used in debugging, game modding, malware analysis, but also in data theft, bypassing protections, or functionality hijacking. 
 
 
-⚠️ Disclaimer:
-This project is for educational and ethical purposes only — do not use its code or concepts in unauthorized environments. Keylogging or injecting code into other processes is illegal if used maliciously.
+> ⚠️ Disclaimer:
+> This project is for educational and ethical purposes only — do not use its code or concepts in unauthorized environments. > Keylogging or injecting code into other processes is illegal if used maliciously.
 
+</br>
 
-
-Project Overview:
+## Project Overview:
 
 This project has two main components:
 ✅ A Custom DLL (`logger.dll` change to keyhook.dll?): Hooks keyboard events and logs them to a file (C:\keylog.txt).
@@ -23,8 +23,9 @@ This project has two main components:
 
 In this exercise, `keyhook.py` is a script performing a manual DLL injection into a Notepad process, to perform keystroke logging via `logger.dll`.
 
+</br>
 
-Setup:
+### Setup:
 
 - this project uses Python `ctypes` and `pywin32` libraries to simulate C/C++ interaction with operating system-level functions. Run `install.bat` to auto-install all the necessary python dependencies, if they are missing. Then run `compile_logger.bat` to generate the dll binary.
 
@@ -38,8 +39,9 @@ Setup:
         `10892` is the PID.
 
 
+</br>
 
-Execution:
+### Execution:
 
 - Run the injector script with the correct PID. Example: `python inject.py 10892`
 
@@ -59,38 +61,45 @@ Execution:
 
 
 
-Cleanup:
+</br>
+
+### Cleanup:
 
 - Closing the target process unloads the DLL. Delete C:\keylog.txt and test.dll if needed.
 
+---
 
+## 🧠 What Is the Injector (`keyhook.py`) Actually Doing to Notepad?
 
+The injection process causes **Notepad** (or any target process) to:
 
+1. **Load your custom DLL** into its memory space
+   Using the `LoadLibraryA` function, the injector forces the target process to load your DLL.
 
+2. **Execute the DLL’s `DllMain()` function**
+   This function is called automatically by the system, typically with the reason `DLL_PROCESS_ATTACH`, allowing your code to run as part of the target process.
 
-❓ What Is the Injector (keyhook.py) Actually Doing to Notepad?
-the injection process causes Notepad to:
+---
 
-Load your custom DLL into its memory space (using LoadLibraryA).
+## ⚙️ How DLL Injection Works
 
-Execute the DLL’s DllMain() function — usually just once, with the reason DLL_PROCESS_ATTACH.
+1. **Find the Target Process**
+   Use Windows APIs like `OpenProcess()` to get a handle to the process you want to inject into.
 
+2. **Allocate Memory**
+   Allocate memory inside the target process using `VirtualAllocEx()`.
 
-⚙️ How DLL Injection Works:
-1. Find the Target Process
-Use Windows APIs like OpenProcess() to get a handle to the process you want to inject into.
+3. **Write DLL Path**
+   Write the path to the DLL into that memory using `WriteProcessMemory()`.
 
-2. Allocate Memory
-Allocate memory inside the target process using VirtualAllocEx().
+4. **Create Remote Thread**
+   Use `CreateRemoteThread()` to run `LoadLibrary()` inside the target process, which loads the DLL you planted.
 
-3. Write DLL Path
-Write the path to the malicious DLL into that memory using WriteProcessMemory().
+### 🔐 Result
 
-4. Create Remote Thread
-Use CreateRemoteThread() to run LoadLibrary() inside the target process, which loads the DLL you planted.
+The injected DLL now runs **as if it’s part of the target application**, sharing its memory and privileges.
 
-🔐 The injected DLL now runs as if it’s part of the target app.
-
+---
 
 🧭 2. Visual Diagram: DLL Injection Flow
 
@@ -136,46 +145,62 @@ Use CreateRemoteThread() to run LoadLibrary() inside the target process, which l
         └──────────────────────────────────┘
 
 
+---
 
-What Could the DLL Do to Notepad?
-Once inside Notepad’s process space, your DLL has full access to its memory, windows, UI, keyboard events, etc. Here’s what it could potentially do:
-🧪 1. Monitor or Manipulate Text Input
-Hook Notepad's text buffer to log keystrokes
+## 💥 What Could the DLL Do to Notepad?
 
-Automatically modify what’s typed into the editor
+Once injected into Notepad’s process space, your DLL has **full access** to its memory, windows, UI, keyboard events, and more. Here’s what it could potentially do:
 
-🎯 2. Hook API Calls
-Intercept calls to WriteFile, ReadFile, SendMessage, etc.
+---
 
-Modify Notepad’s behavior at runtime
+### 🧪 1. Monitor or Manipulate Text Input
 
-🔍 3. Read or Write Process Memory
-Scan for text content in RAM (like clipboard or typed text)
+* Hook into Notepad's **text buffer** to log user input.
+* **Automatically modify** text typed into the editor in real time.
 
-Exfiltrate text files or inserted data
+---
 
-🧨 4. Inject Code into Other Threads
-Spawn new threads inside Notepad
+### 🎯 2. Hook API Calls
 
-Use Notepad as a stealth host for malicious operations
+* Intercept system calls like `WriteFile`, `ReadFile`, `SendMessage`, etc.
+* Modify or redirect Notepad’s behavior at **runtime**.
 
-🔁 5. Use Notepad as a Launchpad
-Act as a stealthy parent to launch other payloads
+---
 
-Communicate with a C2 server using Notepad's process context (to evade detection)
+### 🔍 3. Read or Write Process Memory
+
+* Scan Notepad’s memory for sensitive content (e.g., typed text, clipboard).
+* **Exfiltrate** in-memory data or inject custom content.
+
+---
+
+### 🧨 4. Inject Code into Other Threads
+
+* Create or hijack threads within Notepad.
+* Use Notepad as a **stealth container** to run hidden operations.
+
+---
+
+### 🔁 5. Use Notepad as a Launchpad
+
+* Launch additional processes or payloads from within Notepad.
+* Communicate with a **C2 server** using Notepad’s identity to evade detection.
+
+---
 
 
-HOT: 🕷️ Example: Stealing Browser Cookies
+
+<!-- HOT: 🕷️ Example: Stealing Browser Cookies 
 Inject into chrome.exe, hook functions that handle cookies (like InternetGetCookie), and dump them to a file or C2 server.
-
-
+-->
+ 
 
 --------------------------------------------------
 
 
 
 
-
+<!-- 
 🛡️ Blue Team Tips:
 Monitor for calls to VirtualAllocEx, WriteProcessMemory, CreateRemoteThread.
 
@@ -343,3 +368,5 @@ Stealth level	Lower	Higher
 Complexity	Easier	Advanced
 AV/EDR detection	More likely	Less likely (if done right)
 Use cases	Scripted tools, trainers	Malware, red teaming, custom loaders
+
+-->
