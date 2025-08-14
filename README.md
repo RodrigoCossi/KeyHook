@@ -18,8 +18,8 @@ The injected DLL can perform various actions, from altering the process's behavi
 ## Project Overview:
 
 This project has two main components:
-✅ A Custom DLL (`logger.dll` change to keyhook.dll?): Hooks keyboard events and logs them to a file (C:\keylog.txt).
-✅ An Injector (`keyhook.py` change to injector?): A script to inject the DLL into a running process (e.g., Notepad).
+<br>✅ A Custom DLL (`logger.dll` change to keyhook.dll?): Hooks keyboard events and logs them to a file (C:\keylog.txt).
+<br>✅ An Injector (`keyhook.py` change to injector?): A script to inject the DLL into a running process (e.g., Notepad).
 
 In this exercise, `keyhook.py` is a script performing a manual DLL injection into a Notepad process, to perform keystroke logging via `logger.dll`.
 
