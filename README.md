@@ -78,11 +78,11 @@ In this exercise, `keyhook.py` is a script performing a manual DLL injection int
 
 The injection process causes **Notepad** (or any target process) to:
 
-1. **Load your custom DLL** into its memory space
-   Using the `LoadLibraryA` function, the injector forces the target process to load your DLL.
+1. **Load your custom DLL into its memory space**
+   <br> Using the `LoadLibraryA` function, the injector forces the target process to load your DLL.
 
 2. **Execute the DLL’s `DllMain()` function**
-   This function is called automatically by the system, typically with the reason `DLL_PROCESS_ATTACH`, allowing your code to run as part of the target process.
+   <br> This function is called automatically by the system, typically with the reason `DLL_PROCESS_ATTACH`, allowing your code to run as part of the target process.
 
 ---
 
@@ -98,7 +98,7 @@ The injection process causes **Notepad** (or any target process) to:
    <br> Write the path to the DLL into that memory using `WriteProcessMemory()`.
 
 4. **Create Remote Thread**
-   <br> Use `CreateRemoteThread()` to run `LoadLibrary()` inside the target process, which loads the DLL you planted.
+   <br> Use `CreateRemoteThread()` to run `LoadLibrary()` inside the target process, which loads the DLL.
 
 ### 🔐 Result
 
