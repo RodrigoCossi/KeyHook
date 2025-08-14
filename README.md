@@ -32,7 +32,7 @@ In this exercise, `keyhook.py` is a script performing a manual DLL injection int
 
 ### Setup:
 
-- this project uses Python `ctypes` and `pywin32` libraries to simulate C/C++ interaction with operating system-level functions. Run `install.bat` to auto-install all the necessary python dependencies, if they are missing. Then run `compile_logger.bat` to generate the dll binary.
+- this project uses Python `ctypes` and `pywin32` libraries to simulate C/C++ interaction with operating system-level functions. Run `install.bat` to auto-install all the necessary python dependencies if they are missing. Then, run `compile_logger.bat` from `x64 Native Tools Command Prompt for VS` to generate a 64-bit `logger.dll` binary. (Notepad is a 64-bit app on Windows 11. You may want to check Nodepad's bitness on your machine first)  
 
 
 - Open a shell and launch a targer process. For example, `notepad.exe`. Keep it running.
