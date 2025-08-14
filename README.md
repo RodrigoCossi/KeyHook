@@ -26,7 +26,8 @@ This project has two main components:
 In this exercise, `keyhook.py` is a script performing a manual DLL injection into a Notepad process, to perform keystroke logging via `logger.dll`.
 
 </br>
-Add images here
+(Add images here)
+</br>
 </br>
 
 ### Setup:
