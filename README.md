@@ -89,16 +89,16 @@ The injection process causes **Notepad** (or any target process) to:
 ## ⚙️ How DLL Injection Works
 
 1. **Find the Target Process**
-   Use Windows APIs like `OpenProcess()` to get a handle to the process you want to inject into.
+   <br> Use Windows APIs like `OpenProcess()` to get a handle to the process you want to inject into.
 
 2. **Allocate Memory**
-   Allocate memory inside the target process using `VirtualAllocEx()`.
+   <br> Allocate memory inside the target process using `VirtualAllocEx()`.
 
 3. **Write DLL Path**
-   Write the path to the DLL into that memory using `WriteProcessMemory()`.
+   <br> Write the path to the DLL into that memory using `WriteProcessMemory()`.
 
 4. **Create Remote Thread**
-   Use `CreateRemoteThread()` to run `LoadLibrary()` inside the target process, which loads the DLL you planted.
+   <br> Use `CreateRemoteThread()` to run `LoadLibrary()` inside the target process, which loads the DLL you planted.
 
 ### 🔐 Result
 
