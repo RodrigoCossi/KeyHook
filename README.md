@@ -39,7 +39,7 @@ In this exercise, `keyhook.py` is a script performing a manual DLL injection int
 
 
 - Obtain the Process ID (PID).
-        - On the same shell, run `tasklist | findstr notepad`. It will look like:
+        - On the same shell, run `Get-Process | Where-Object {$_.ProcessName -like "*note*"}`. It will look like:
         notepad.exe              10892 Console ...
         `10892` is the PID.
 
