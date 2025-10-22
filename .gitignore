@@ -1,0 +1,10 @@
+/.vs
+/.vscode
+/built
+/hook.dll
+/hook.obj
+/inlinehook.cpp
+/inlinehook.obj
+/keyboardhook.obj
+/log.txt
+/ReadConsoleA-injector.obj
