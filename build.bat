@@ -134,10 +134,6 @@ IF %ERRORLEVEL% NEQ 0 (
 ) ELSE (
     echo [SUCCESS] GUIhook.dll compiled successfully!
 )
-    goto :error
-) ELSE (
-    echo [SUCCESS] %INLINE_HOOK_DLL% compiled successfully!
-)
 
 echo.
 echo ========================================

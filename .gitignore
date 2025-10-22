@@ -5,6 +5,7 @@
 /hook.obj
 /inlinehook.obj
 /keyboardhook.obj
+/GUIhook.obj
 /log.txt
 /injector.exe
 /injector.obj
