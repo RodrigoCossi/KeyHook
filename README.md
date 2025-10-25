@@ -1,10 +1,21 @@
-# KeyHook - Advanced Keylogger with DLL Injection
+# KeyHook - Exploiting DLL Injections for Keylogging
 
-A sophisticated Windows keylogger implementation using low-level keyboard hooks and DLL injection techniques. This project demonstrates advanced Windows API usage for educational and security research purposes.
+</br>
 
-## ⚠️ Legal Disclaimer
+> ⚠️ **Disclaimer:**
+> <h3>This project is for educational and ethical purposes only — do not use its code or concepts in unauthorized environments. Keylogging or injecting code into other processes is illegal if used maliciously.</h3>
 
-This software is intended for **educational purposes only**. Use responsibly and only on systems you own or have explicit permission to monitor. Unauthorized keylogging is illegal in many jurisdictions.
+</br>
+
+## Intro about DLLs:
+
+DLL injection is a technique used to run code within the address space of another process by forcing it to load a dynamic-link library (DLL) - a shared module used natively in Windows systems to control essential resources and functionalities. ([Microsoft Documentation](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-libraries)).
+
+This method allows the injected code to manipulate the target process's behavior, which can be used for both legitimate and malicious purposes.
+
+The injected DLL can perform various actions, from altering the process's behavior to stealing sensitive information. It's a technique used in debugging, game modding, malware analysis, but also in data theft, bypassing protections, or functionality hijacking. 
+
+</br>
 
 ## 🚀 Features
 
@@ -20,15 +31,12 @@ This software is intended for **educational purposes only**. Use responsibly and
 
 ```
 KeyHook/
-├── keyboardhook.cpp         # Main keylogger DLL with keyboard hook
-├── ReadConsoleA-injector.cpp # DLL injector utility
-├── inlinehook.cpp          # Alternative: ReadConsoleA inline hook
-├── hook.cpp                # (Empty placeholder)
+├── keyboardhook.cpp        # Main keylogger DLL with keyboard hook
+├── injector.cpp            # DLL injector utility
 ├── build.bat               # Automated build script
 ├── built/                  # Generated compiled files
 │   ├── keylogger.dll       # Main keylogger DLL
 │   ├── injector.exe        # DLL injection tool
-│   └── inlinehook.dll      # ReadConsoleA hook DLL
 ├── log.txt                 # Keystroke log file (generated)
 └── README.md               # This documentation
 ```
@@ -73,8 +81,7 @@ If you prefer manual compilation:
 3. **Compile individual components**:
    ```cmd
    cl /LD /EHsc /Fekeylogger.dll keyboardhook.cpp user32.lib kernel32.lib
-   cl /EHsc /Feinjector.exe ReadConsoleA-injector.cpp user32.lib kernel32.lib
-   cl /LD /EHsc /Feinlinehook.dll inlinehook.cpp user32.lib kernel32.lib
+   cl /EHsc /Feinjector.exe injector.cpp user32.lib kernel32.lib
    ```
 
 ## 🎯 Usage
@@ -148,7 +155,7 @@ The main component implementing:
 - Special keys ([ENTER], [BACKSPACE], [F1-F12], etc.)
 - Punctuation and symbols
 
-### 2. DLL Injector (`ReadConsoleA-injector.cpp`)
+### 2. DLL Injector (`injector.cpp`)
 
 Utility for injecting DLLs into target processes:
 - **Process Memory Allocation**
@@ -156,12 +163,6 @@ Utility for injecting DLLs into target processes:
 - **LoadLibrary Injection Technique**
 - **Error Handling and Cleanup**
 
-### 3. Inline Hook (`inlinehook.cpp`)
-
-Alternative approach using function hooking:
-- **ReadConsoleA Function Interception**
-- **Original Function Preservation**
-- **Console Input Monitoring**
 
 ## 🔍 Technical Details
 
@@ -184,6 +185,114 @@ VK_RETURN (0x0D) → '\n'
 - **Location**: Project directory (`log.txt`)
 - **Format**: Plain text, real-time appending
 - **Path**: Absolute path to handle working directory changes
+
+## ⚙️ How DLL Injection Works
+
+1. **Find the Target Process**
+   <br> Use Windows APIs like `OpenProcess()` to get a handle to the process you want to inject into.
+
+2. **Allocate Memory**
+   <br> Allocate memory inside the target process using `VirtualAllocEx()`.
+
+3. **Write DLL Path**
+   <br> Write the path to the DLL into that memory using `WriteProcessMemory()`.
+
+4. **Create Remote Thread**
+   <br> Use `CreateRemoteThread()` to run `LoadLibraryA()` inside the target process, which loads the DLL.
+
+### 🔐 Result
+
+The injected DLL now runs **as if it's part of the target application**, sharing its memory and privileges.
+
+---
+
+## 🧭 Visual Diagram: DLL Injection Flow
+
+```
+[Injector Process - injector.exe]
+              │
+    ┌─────────┴────────────┐
+    │ Open Target Process  │   ← OpenProcess
+    └─────────┬────────────┘
+              │
+    ┌─────────▼────────────┐
+    │ Allocate Memory      │   ← VirtualAllocEx
+    └─────────┬────────────┘
+              │
+    ┌─────────▼────────────┐
+    │ Write DLL Path       │   ← WriteProcessMemory
+    └─────────┬────────────┘
+              │
+    ┌─────────▼────────────┐
+    │ Get LoadLibraryA     │   ← GetProcAddress
+    └─────────┬────────────┘
+              │
+    ┌─────────▼────────────┐
+    │ Start Remote Thread  │   ← CreateRemoteThread
+    └─────────┬────────────┘
+              │
+    ┌─────────▼────────────┐
+    │ DLL Loaded into      │
+    │ Target Process       │
+    └─────────┬────────────┘
+              │
+              ▼
+    ┌───────────────────────────────┐
+    │ DllMain(DLL_PROCESS_ATTACH):  │  ← Automatically called
+    │                               │
+    │ - DisableThreadLibraryCalls() │
+    │ - CreateThread(...)           │  ← Background thread for hook
+    └─────────┬─────────────────────┘
+              │
+    ┌─────────▼─────────────────────────┐
+    │ HookThread():                     │
+    │ - SetWindowsHookEx(WH_KEYBOARD_LL)│ ← Installs low-level keyboard hook
+    │ - Loop: GetMessage/Dispatch       │ ← Keeps hook alive (event loop)
+    └───────────────────────────────────┘
+```
+
+---
+
+## 💥 What Could the DLL Do to Target Processes?
+
+Once injected into a process's memory space, your DLL has **full access** to its memory, windows, UI, keyboard events, and more. Here's what it could potentially do:
+
+---
+
+### 🧪 1. Monitor or Manipulate Text Input
+
+* Hook into the process's **text buffer** to log user input.
+* **Automatically modify** text typed into applications in real time.
+
+---
+
+### 🎯 2. Hook API Calls
+
+* Intercept system calls like `WriteFile`, `ReadFile`, `SendMessage`, etc.
+* Modify or redirect the process's behavior at **runtime**.
+
+---
+
+### 🔍 3. Read or Write Process Memory
+
+* Scan process memory for sensitive content (e.g., typed text, clipboard).
+* **Exfiltrate** in-memory data or inject custom content.
+
+---
+
+### 🧨 4. Inject Code into Other Threads
+
+* Create or hijack threads within the target process.
+* Use the process as a **stealth container** to run hidden operations.
+
+---
+
+### � 5. Use Process as a Launchpad
+
+* Launch additional processes or payloads from within the target.
+* Communicate with external systems using the process's identity to evade detection.
+
+---
 
 ## 🛡️ Security Considerations
 
