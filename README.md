@@ -34,9 +34,12 @@ KeyHook/
 ├── keyboardhook.cpp        # Main keylogger DLL with keyboard hook
 ├── injector.cpp            # DLL injector utility
 ├── build.bat               # Automated build script
-├── built/                  # Generated compiled files
-│   ├── keylogger.dll       # Main keylogger DLL
-│   ├── injector.exe        # DLL injection tool
+├── built/                  # compiled files (generated)
+│   ├── keylogger.dll       # Main keylogger DLL (generated)
+│   └── injector.exe        # DLL injection tool (generated)
+├── obj/                    # object files (generated)
+│   ├── keyboardhook.obj    # Compiled from keyboardhook.cpp (generated)
+│   └── injector.obj        # Compiled from injector.cpp (generated)
 ├── log.txt                 # Keystroke log file (generated)
 └── README.md               # This documentation
 ```
