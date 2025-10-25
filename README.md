@@ -302,11 +302,27 @@ Once injected into a process's memory space, your DLL has **full access** to its
 - Minimal API calls
 - File logging can be customized/encrypted
 
-### Potential Detection Methods
-- Process module enumeration
-- Hook chain inspection
-- File system monitoring
-- Behavioral analysis
+### Additional Evasion (Educational):
+- **Reflective DLL Loading**: Load from memory without touching disk
+- **API Unhooking**: Bypass EDR hooks before injection
+- **Process Hollowing**: Replace legitimate process memory
+- **Signed DLLs**: Use legitimate signed libraries as carriers
+
+
+### Blue Team Potential Detection methods:
+
+| Technique | Detection Method |
+|-----------|------------------|
+| DLL Injection | Monitor `CreateRemoteThread`, `VirtualAllocEx` calls |
+| Keyboard Hooks | Detect `SetWindowsHookEx` in unusual processes |
+| Suspicious Files | Monitor writes to `log.txt`, unusual DLL loads |
+| Process Behavior | Notepad/Explorer with unexpected network/file activity |
+| Process Module Enumeration |scan process's memory to detect modules that are in memory but without a corresponding file path on disk|
+| Hook Chain Inspection | look for unexpected modifications on critical Windows functions, like on `kernel32.dll` (API Unhooking)|
+| File System Monitoring | Monitor system-wide file activity for suspicious patterns |
+| Behavioral Analysis | Use baselines and machine learning to detect "normal" activity anomalies (Process Hollowing or privilege escalation)|
+
+
 
 ## 🚨 Troubleshooting
 
