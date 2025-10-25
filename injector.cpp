@@ -1,4 +1,4 @@
-// cl ReadConsoleA-injector.cpp /Fe:injector.exe /link user32.lib kernel32.lib
+// cl injector.cpp /Fe:injector.exe /link user32.lib kernel32.lib
 // injector.exe <PID> <full_path_to_your_DLL>
 #include <windows.h>
 #include <iostream>
