@@ -75,7 +75,10 @@ echo.
 REM Create/recreate build output directory
 if exist "built" rmdir /s /q "built"
 mkdir "built"
+if exist "obj" rmdir /s /q "obj"
+mkdir "obj"
 echo [SETUP] Created build output directory: built\
+echo [SETUP] Created object files directory: obj\
 echo.
 
 REM Define output names with build directory
@@ -88,8 +91,8 @@ set HOOK_LIBS=user32.lib kernel32.lib
 set INJECTOR_LIBS=user32.lib kernel32.lib
 
 echo [1/2] Compiling Keyboard Hook DLL...
-echo Command: cl /LD /EHsc /Fe%KEYLOGGER_DLL% keyboardhook.cpp %HOOK_LIBS%
-cl /LD /EHsc /Fe%KEYLOGGER_DLL% keyboardhook.cpp %HOOK_LIBS%
+echo Command: cl /LD /EHsc /Foobj\ /Fe%KEYLOGGER_DLL% keyboardhook.cpp %HOOK_LIBS%
+cl /LD /EHsc /Foobj\ /Fe%KEYLOGGER_DLL% keyboardhook.cpp %HOOK_LIBS%
 
 IF %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Keyboard Hook DLL compilation failed!
@@ -100,8 +103,8 @@ IF %ERRORLEVEL% NEQ 0 (
 
 echo.
 echo [2/2] Compiling DLL Injector...
-echo Command: cl /EHsc /Fe%INJECTOR_EXE% injector.cpp %INJECTOR_LIBS%
-cl /EHsc /Fe%INJECTOR_EXE% injector.cpp %INJECTOR_LIBS%
+echo Command: cl /EHsc /Foobj\ /Fe%INJECTOR_EXE% injector.cpp %INJECTOR_LIBS%
+cl /EHsc /Foobj\ /Fe%INJECTOR_EXE% injector.cpp %INJECTOR_LIBS%
 
 IF %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Injector compilation failed!
