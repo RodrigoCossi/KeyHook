@@ -1,10 +1,5 @@
 /.vs
 /.vscode
 /built
-/hook.dll
-/hook.obj
-/inlinehook.cpp
-/inlinehook.obj
-/keyboardhook.obj
+/obj
 /log.txt
-/injector.obj
